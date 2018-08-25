@@ -1,0 +1,198 @@
+from ConfigParser import SafeConfigParser
+import pygame
+import queue
+import requests
+from threading import Thread
+
+from time import sleep
+
+
+STATE_END = 0
+STATE_SONG = 1
+STATE_SONG_LOOP = 2
+STATE_SONG_THEN_WHITENOISE = 3
+STATE_WHITENOISE = 4
+STATE_WHITENOISE_LVL2 = 5
+
+SONG_END = pygame.USEREVENT + 1
+
+
+class ChangeWorker(Thread):
+
+    end_processing = False
+
+    def __init__(self, url, username, password, change_queue):
+        Thread.__init__(self)
+        self.username = username
+        self.password = password
+        self.url = url
+        self.change_queue = change_queue
+
+    def get_msg(self):
+        response = requests.get(self.url, auth=(self.username, self.password))
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None
+
+    def run(self):
+        while not self.end_processing:
+            event = self.get_msg()
+            if event:
+                self.change_queue.put(event)
+
+    def stop(self):
+        self.end_processing = True
+
+
+class NurseryClient(object):
+
+    CONFIG_FILENAME = 'nursery.ini'
+
+    WHITENOISE_LVL1_FILE = 'Rain.mp3'
+    WHITENOISE_LVL2_FILE = 'Strong_Hair_Dryer.mp3'
+
+    FADEOUT_MSECS = 5000
+    LEVEL2_PLAY_SECS = 7 * 60
+    LEVEL2_FULL_SECS = 8 * 60
+
+    state = STATE_END
+
+    song_end_cb = None
+
+    def __init__(self):
+        parser = SafeConfigParser()
+        found = parser.read(self.CONFIG_FILENAME)
+
+        if not found:
+            raise IOError('Config file "%s" not found.' % self.CONFIG_FILENAME)
+
+        self.song_file = parser.get('device', 'song_file', None)
+        self.server_user = parser.get('device', 'server_user', None)
+        self.server_pass = parser.get('device', 'server_pass', None)
+        self.server_url = parser.get('device', 'server_url', None)
+
+        pygame.mixer.init()
+        pygame.mixer.music.set_endevent(SONG_END)
+        self.change_queue = queue.SimpleQueue()
+
+    def play_song(self):
+        pygame.mixer.music.load(self.song_file)
+        pygame.mixer.music.play(0)
+
+    def play_whitenoise(self, level_two=False):
+        if level_two:
+            pygame.mixer.music.load(self.WHITENOISE_LVL2_FILE)
+            pygame.mixer.music.play(loops=0, start=self.LEVEL2_FULL_SECS-self.LEVEL2_PLAY_SECS)
+        else:
+            pygame.mixer.music.load(self.WHITENOISE_LVL1_FILE)
+            pygame.mixer.music.play(loops=-1)
+
+    def go_whitenoise(self):
+        self.song_end_cb = None
+        self.state = STATE_WHITENOISE
+        self.play_whitenoise()
+
+    def go_whitenoise_lvl2(self):
+        self.song_end_cb = self.go_whitenoise
+        self.state = STATE_WHITENOISE_LVL2
+        self.play_whitenoise(level_two=True)
+
+    def go_song_loop(self, start_song=False):
+        self.song_end_cb = self.play_song
+        self.state = STATE_SONG_LOOP
+        if start_song:
+            self.play_song()
+
+    def go_song(self, start_song=False):
+        self.song_end_cb = None
+        self.state = STATE_SONG
+        if start_song:
+            self.play_song()
+
+    def go_song_then_whitenoise(self, start_song=False):
+        self.song_end_cb = self.go_whitenoise
+        self.state = STATE_SONG_THEN_WHITENOISE
+        if start_song:
+            self.play_song()
+
+    def go_end(self):
+        self.song_end_cb = None
+        self.state = SONG_END
+
+    def fadeout_then_do(self, func, arg):
+        pygame.mixer.music.fadeout(self.FADEOUT_MSECS)
+        while not any([event.type == SONG_END for event in pygame.event.get()]):
+            pass
+        func(self, arg)
+
+    def get_event(self):
+        try:
+            event = self.change_queue.get_nowait()
+            return event
+        except queue.Empty:
+            if any([event.type == SONG_END for event in pygame.event.get()]):
+                return SONG_END
+            return None
+
+    def handle_event(self, event):
+        if event == SONG_END and self.song_end_cb:
+            self.song_end_cb(self)
+
+        if self.state == STATE_END:
+            if event == STATE_SONG:
+                self.go_song(start_song=True)
+            elif event == STATE_SONG_LOOP:
+                self.go_song_loop(start_song=True)
+            elif event == STATE_SONG_THEN_WHITENOISE:
+                self.go_song_then_whitenoise(start_song=True)
+            elif event == STATE_WHITENOISE:
+                self.go_whitenoise()
+
+        elif self.state in (STATE_SONG, STATE_SONG_LOOP, STATE_SONG_THEN_WHITENOISE):
+            if event == STATE_SONG:
+                self.go_song(start_song=False)
+            elif event == STATE_SONG_LOOP:
+                self.go_song_loop(start_song=False)
+            elif event == STATE_SONG_THEN_WHITENOISE:
+                self.go_song_then_whitenoise(start_song=False)
+            elif event == STATE_WHITENOISE:
+                self.go_song_then_whitenoise(start_song=False)
+                pygame.mixer.music.fadeout(self.FADEOUT_MSECS)
+            elif event == STATE_END:
+                self.go_end()
+                pygame.mixer.music.fadeout(self.FADEOUT_MSECS)
+
+        elif self.state in (STATE_WHITENOISE, STATE_WHITENOISE_LVL2):
+            if event == STATE_SONG:
+                self.fadeout_then_do(self.go_song, True)
+            elif event == STATE_SONG_LOOP:
+                self.fadeout_then_do(self.go_song_loop, True)
+            elif event == STATE_SONG_THEN_WHITENOISE:
+                self.fadeout_then_do(self.go_song_then_whitenoise, True)
+            elif event == STATE_WHITENOISE and self.state != event:
+                self.go_whitenoise()
+            elif event == STATE_WHITENOISE_LVL2 and self.state != event:
+                self.go_whitenoise_lvl2()
+
+    def start_worker(self):
+        self.change_worker = ChangeWorker(self.change_queue)
+
+    def run(self):
+        self.start_worker()
+        while True:
+            event = self.get_event()
+            if event:
+                self.handle_event(event)
+            else:
+                sleep(0.05)
+
+    @staticmethod
+    def startup():
+        try:
+            client = NurseryClient()
+            client.run()
+        except Exception as e:
+            print("Unable to start client: %s" % e)
+
+NurseryClient.startup()
