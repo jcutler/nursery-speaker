@@ -39,12 +39,12 @@ class NurseryServer(object):
         print("")
         print(json.dumps(data))
 
-    def validate(self, input):
+    def validate(self, params):
         errors = []
         data = {}
 
-        if 'mode' in input:
-            mode = input.getfirst('mode').upper()
+        if 'mode' in params:
+            mode = params.getfirst('mode').upper()
             if mode not in self.VALID_MODES:
                 errors.append("Value '%s' is not an acceptable mode" % mode)
                 return False, errors
@@ -54,11 +54,11 @@ class NurseryServer(object):
             errors.append("Field 'mode' is missing")
             return False, errors
 
-        if 'level' in input:
+        if 'level' in params:
             if data['mode'] != 'WHITENOISE':
                 errors.append("Level specified on a mode other than WHITENOISE")
             else:
-                level_input = input.getfirst('level')
+                level_input = params.getfirst('level')
                 try:
                     data['level'] = int(level_input)
 
@@ -123,10 +123,10 @@ class NurseryServer(object):
         finally:
             self.disconnect()
 
-    def handle(self, input):
+    def handle(self, params):
 
         if os.environ['REQUEST_METHOD'] == 'POST':
-            validated, result = self.validate(input)
+            validated, result = self.validate(params)
 
             if not validated:
                 NurseryServer.send_response(
@@ -156,10 +156,10 @@ class NurseryServer(object):
             return False
 
     @staticmethod
-    def startup(input):
+    def startup(params):
         try:
             server = NurseryServer()
-            server.handle(input)
+            server.handle(params)
         except Exception as e:
             NurseryServer.send_response(500, {'error': "Unable to start server: %s" % e})
 
