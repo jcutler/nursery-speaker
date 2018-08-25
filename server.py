@@ -43,28 +43,30 @@ class NurseryServer(object):
         errors = []
         data = {}
 
-        mode = input.getfirst('mode', None)
-        if mode:
-            data['mode'] = mode.upper()
-
-        level_input = input.getfirst('level', None)
-
-        if 'mode' not in input:
+        if 'mode' in input:
+            mode = input.getfirst('mode').upper()
+            if mode not in self.VALID_MODES:
+                errors.append("Value '%s' is not an acceptable mode" % mode)
+                return False, errors
+            else:
+                data['mode'] = mode
+        else:
             errors.append("Field 'mode' is missing")
-        elif input.getfirst('mode').upper() not in self.VALID_MODES:
-            errors.append("Value '%s' is not an acceptable mode" % input.getfirst('mode').upper())
+            return False, errors
 
-        if level_input:
-            if 'mode' not in data or data['mode'] != 'WHITENOISE':
+        if 'level' in input:
+            if data['mode'] != 'WHITENOISE':
                 errors.append("Level specified on a mode other than WHITENOISE")
-            elif 'mode' in data:
+            else:
+                level_input = input.getfirst('level')
                 try:
                     data['level'] = int(level_input)
+
                     if data['level'] < 1 or data['level'] > 2:
                         errors.append("Unexpected level given: %d" % data['level'])
                 except ValueError:
                     errors.append("Unexpected level given: %s" % level_input)
-        elif 'mode' in data and data['mode'] == 'WHITENOISE':
+        elif data['mode'] == 'WHITENOISE':
             data['level'] = 1
 
         if not errors:
