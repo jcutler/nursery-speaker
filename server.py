@@ -1,11 +1,11 @@
-#!env/bin/python
+#!/home/ciw/env/bin/python
 
 import cgi
-from ConfigParser import SafeConfigParser
-from datetime import timezone
+from configparser import SafeConfigParser
 import json
 import os
 import pymysql.cursors
+import pytz
 
 class NurseryServer(object):
 
@@ -15,19 +15,22 @@ class NurseryServer(object):
         'END', 'SONG', 'SONG_LOOP', 'SONG_THEN_WHITENOISE', 'WHITENOISE'
     ]
 
-    def __init__(self):
+    def load_config(self):
         parser = SafeConfigParser()
         found = parser.read(self.CONFIG_FILENAME)
 
         if not found:
             raise IOError('Config file "%s" not found.' % self.CONFIG_FILENAME)
 
-        self.db_name = parser.get('server', 'db_name', None)
-        self.username = parser.get('server', 'db_user', None)
-        self.password = parser.get('server', 'db_pass', None)
+        try:
+            self.db_name = parser.get('server', 'db_name')
+            self.username = parser.get('server', 'db_user')
+            self.password = parser.get('server', 'db_pass')
+        except Exception as e:
+            raise ValueError('Definitions missing from config file: %s' % e)
 
-        if not self.db_name or not self.username or not self.password:
-            raise ValueError('Definitions missing from config file.')
+    def __init__(self):
+        self.load_config()
 
     @staticmethod
     def send_response(status, data):
@@ -52,16 +55,16 @@ class NurseryServer(object):
             errors.append("Value '%s' is not an acceptable mode" % input.getfirst('mode').upper())
 
         if level_input:
-            if data['mode'] != 'WHITENOISE':
+            if 'mode' not in data or data['mode'] != 'WHITENOISE':
                 errors.append("Level specified on a mode other than WHITENOISE")
-            else:
+            elif 'mode' in data:
                 try:
                     data['level'] = int(level_input)
                     if data['level'] < 1 or data['level'] > 2:
                         errors.append("Unexpected level given: %d" % data['level'])
                 except ValueError:
                     errors.append("Unexpected level given: %s" % level_input)
-        elif data['mode'] == 'WHITENOISE':
+        elif 'mode' in data and data['mode'] == 'WHITENOISE':
             data['level'] = 1
 
         if not errors:
@@ -105,7 +108,7 @@ class NurseryServer(object):
                 result = cursor.fetchone()
 
                 if result and not result['ack']:
-                    result['create_date'] = result['create_date'].replace(tzinfo=timezone.utc).timestamp()
+                    result['create_date'] = result['create_date'].replace(tzinfo=pytz.utc).timestamp()
                     cursor.execute(
                         "UPDATE `nursery_sounds` SET `ack` = TRUE WHERE `id` = %s",
                         (result['id'])
@@ -154,10 +157,9 @@ class NurseryServer(object):
     def startup(input):
         try:
             server = NurseryServer()
+            server.handle(input)
         except Exception as e:
             NurseryServer.send_response(500, {'error': "Unable to start server: %s" % e})
-
-        server.handle(input)
 
 
 NurseryServer.startup(cgi.FieldStorage())
