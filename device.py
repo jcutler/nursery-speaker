@@ -1,4 +1,4 @@
-from ConfigParser import SafeConfigParser
+from configparser import ConfigParser
 import pygame
 import queue
 import requests
@@ -61,7 +61,7 @@ class NurseryClient(object):
     song_end_cb = None
 
     def __init__(self):
-        parser = SafeConfigParser()
+        parser = ConfigParser()
         found = parser.read(self.CONFIG_FILENAME)
 
         if not found:

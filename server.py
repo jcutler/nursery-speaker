@@ -1,7 +1,7 @@
 #!/home/ciw/env/bin/python
 
 import cgi
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import json
 import os
 import pymysql.cursors
@@ -16,7 +16,7 @@ class NurseryServer(object):
     ]
 
     def load_config(self):
-        parser = SafeConfigParser()
+        parser = ConfigParser()
         found = parser.read(self.CONFIG_FILENAME)
 
         if not found:
