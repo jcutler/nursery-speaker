@@ -166,7 +166,7 @@ class NurseryClient(object):
     def go_end(self):
         log_debug("Go End")
         self.song_end_cb = None
-        self.state = SONG_END
+        self.state = STATE_END
 
     def fadeout_then_do(self, func, arg):
         log_debug("Fadeout, then... %s(%s)" % (func, arg))
@@ -188,7 +188,7 @@ class NurseryClient(object):
         log_debug("Handling event: %s -> %s" % (EVENT_TO_STRING_MAP[self.state], EVENT_TO_STRING_MAP[event]))
 
         if event == SONG_END and self.song_end_cb:
-            self.song_end_cb(self)
+            self.song_end_cb()
 
         if self.state == STATE_END:
             if event == STATE_SONG:
