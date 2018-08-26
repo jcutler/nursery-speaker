@@ -176,6 +176,7 @@ class NurseryClient(object):
             event = self.change_queue.get()
             return event
         except queue.Empty:
+            log_debug("Queue Empty, checking pygame")
             if any([event.type == SONG_END for event in pygame.event.get()]):
                 return SONG_END
             return None
@@ -232,7 +233,7 @@ class NurseryClient(object):
         log_debug("Starting event loop")
 
         while True:
-            print('.', end='')
+            print('.', end='', flush=True)
             event = self.get_event()
             if event:
                 self.handle_event(event)
