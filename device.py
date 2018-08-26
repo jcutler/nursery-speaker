@@ -214,6 +214,7 @@ class NurseryClient(object):
 
     def start_worker(self):
         self.change_worker = ChangeWorker(self.server_url, self.server_user, self.server_pass, self.change_queue)
+        self.change_worker.start()
 
     def run(self):
         self.start_worker()
