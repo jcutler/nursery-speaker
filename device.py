@@ -47,6 +47,7 @@ class ChangeWorker(Thread):
 
     def run(self):
         while not self.end_processing:
+            log_debug("Web GET")
             event = self.get_msg()
 
             if event and event['create_date'] < time.time() - self.FIVE_MINUTES:
