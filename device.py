@@ -15,7 +15,19 @@ STATE_SONG_THEN_WHITENOISE = 3
 STATE_WHITENOISE = 4
 STATE_WHITENOISE_LVL2 = 5
 
-SONG_END = pygame.USEREVENT + 1
+SONG_END = max(pygame.USEREVENT + 1, STATE_WHITENOISE_LVL2 + 1)
+
+STRING_TO_EVENT_MAP = {
+    'STATE_END': STATE_END,
+    'STATE_SONG': STATE_SONG,
+    'STATE_SONG_LOOP': STATE_SONG_LOOP,
+    'STATE_SONG_THEN_WHITENOISE': STATE_SONG_THEN_WHITENOISE,
+    'STATE_WHITENOISE': STATE_WHITENOISE,
+    'STATE_WHITENOISE_LVL2': STATE_WHITENOISE_LVL2,
+    'SONG_END': SONG_END
+}
+
+EVENT_TO_STRING_MAP = { STRING_TO_EVENT_MAP[key]: key for key in STRING_TO_EVENT_MAP}
 
 
 def log_debug(msg):
@@ -48,15 +60,15 @@ class ChangeWorker(Thread):
         while not self.end_processing:
             event = self.get_msg()
 
-            if event and event['create_date'] < time.time() - self.FIVE_MINUTES:
-                if event['mode'] == STATE_WHITENOISE and event['level'] == 2:
+            if event and event['create_date'] > time.time() - self.FIVE_MINUTES:
+                if STRING_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and event['level'] == 2:
                     mode = STATE_WHITENOISE_LVL2
                 else:
-                    mode = event['mode']
+                    mode = STRING_TO_EVENT_MAP[event['mode']]
 
-                log_debug("Queueing command: %s" % mode)
+                log_debug("Queueing command: %s" % EVENT_TO_STRING_MAP[mode])
 
-                self.change_queue.put()
+                self.change_queue.put(mode)
 
             time.sleep(1)
 
@@ -169,7 +181,7 @@ class NurseryClient(object):
             return None
 
     def handle_event(self, event):
-        log_debug("Handling event: %s -> %s" % (self.state, event))
+        log_debug("Handling event: %s -> %s" % (self.state, EVENT_TO_STRING_MAP[event]))
 
         if event == SONG_END and self.song_end_cb:
             self.song_end_cb(self)
