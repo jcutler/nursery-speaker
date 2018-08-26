@@ -228,6 +228,9 @@ class NurseryClient(object):
 
     def run(self):
         self.start_worker()
+
+        log_debug("Starting event loop")
+
         while True:
             print('.', end='')
             event = self.get_event()
