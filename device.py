@@ -39,7 +39,6 @@ class ChangeWorker(Thread):
 
     def get_msg(self):
         response = requests.get(self.url, auth=(self.username, self.password))
-        log_debug("Request: %d, %s" % (response.status_code, response.text))
         if response.status_code == 200:
             return response.json()
         else:
@@ -47,7 +46,6 @@ class ChangeWorker(Thread):
 
     def run(self):
         while not self.end_processing:
-            log_debug("Web GET")
             event = self.get_msg()
 
             if event and event['create_date'] < time.time() - self.FIVE_MINUTES:
