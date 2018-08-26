@@ -1,10 +1,10 @@
 from configparser import ConfigParser
+from multiprocessing import SimpleQueue
 import pygame
 import queue
 import requests
 from threading import Thread
-
-from time import sleep
+import time
 
 
 STATE_END = 0
@@ -18,6 +18,8 @@ SONG_END = pygame.USEREVENT + 1
 
 
 class ChangeWorker(Thread):
+
+    FIVE_MINUTES = 60 * 60 * 24 * 5
 
     end_processing = False
 
@@ -38,8 +40,12 @@ class ChangeWorker(Thread):
     def run(self):
         while not self.end_processing:
             event = self.get_msg()
-            if event:
-                self.change_queue.put(event)
+
+            if event and event['create_date'] < time.time() - self.FIVE_MINUTES:
+                if event['mode'] == STATE_WHITENOISE and event['level'] == 2:
+                    self.change_queue.put(STATE_WHITENOISE_LVL2)
+                else:
+                    self.change_queue.put(event['mode'])
 
     def stop(self):
         self.end_processing = True
@@ -77,7 +83,7 @@ class NurseryClient(object):
 
         pygame.mixer.init()
         pygame.mixer.music.set_endevent(SONG_END)
-        self.change_queue = queue.SimpleQueue()
+        self.change_queue = SimpleQueue()
 
     def play_song(self):
         pygame.mixer.music.load(self.song_file)
@@ -131,7 +137,7 @@ class NurseryClient(object):
 
     def get_event(self):
         try:
-            event = self.change_queue.get_nowait()
+            event = self.change_queue.get()
             return event
         except queue.Empty:
             if any([event.type == SONG_END for event in pygame.event.get()]):
@@ -179,7 +185,7 @@ class NurseryClient(object):
                 self.go_whitenoise_lvl2()
 
     def start_worker(self):
-        self.change_worker = ChangeWorker(self.change_queue)
+        self.change_worker = ChangeWorker(self.server_url, self.server_user, self.server_pass, self.change_queue)
 
     def run(self):
         self.start_worker()
@@ -188,7 +194,7 @@ class NurseryClient(object):
             if event:
                 self.handle_event(event)
             else:
-                sleep(0.05)
+                time.sleep(0.05)
 
     @staticmethod
     def startup():
