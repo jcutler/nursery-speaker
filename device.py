@@ -1,5 +1,6 @@
 from configparser import ConfigParser
-from multiprocessing import SimpleQueue
+from multiprocessing import Queue
+import os
 import pygame
 import queue
 import requests
@@ -108,9 +109,12 @@ class NurseryClient(object):
         except Exception as e:
             raise ValueError('Definitions missing from config file: %s' % e)
 
+        pygame.init()
+        os.putenv('SDL_VIDEODRIVER', 'fbcon')
+        pygame.display.init()
         pygame.mixer.init()
         pygame.mixer.music.set_endevent(SONG_END)
-        self.change_queue = SimpleQueue()
+        self.change_queue = Queue()
 
     def play_song(self):
         log_debug("Playing song")
@@ -147,7 +151,7 @@ class NurseryClient(object):
 
     def go_song(self, start_song=False):
         log_debug("Go Song. Start? %s" % start_song)
-        self.song_end_cb = None
+        self.song_end_cb = self.go_end
         self.state = STATE_SONG
         if start_song:
             self.play_song()
@@ -173,16 +177,15 @@ class NurseryClient(object):
 
     def get_event(self):
         try:
-            event = self.change_queue.get()
+            event = self.change_queue.get_nowait()
             return event
         except queue.Empty:
-            log_debug("Queue Empty, checking pygame")
             if any([event.type == SONG_END for event in pygame.event.get()]):
                 return SONG_END
             return None
 
     def handle_event(self, event):
-        log_debug("Handling event: %s -> %s" % (self.state, EVENT_TO_STRING_MAP[event]))
+        log_debug("Handling event: %s -> %s" % (EVENT_TO_STRING_MAP[self.state], EVENT_TO_STRING_MAP[event]))
 
         if event == SONG_END and self.song_end_cb:
             self.song_end_cb(self)
