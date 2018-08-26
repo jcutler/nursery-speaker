@@ -7,6 +7,7 @@ import os
 import pymysql.cursors
 import pytz
 
+
 class NurseryServer(object):
 
     CONFIG_FILENAME = 'nursery.ini'
@@ -68,6 +69,9 @@ class NurseryServer(object):
                     errors.append("Unexpected level given: %s" % level_input)
         elif data['mode'] == 'WHITENOISE':
             data['level'] = 1
+
+        if 'level' not in data:
+            data['level'] = None
 
         if not errors:
             return True, data
