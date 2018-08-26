@@ -67,10 +67,13 @@ class NurseryClient(object):
         if not found:
             raise IOError('Config file "%s" not found.' % self.CONFIG_FILENAME)
 
-        self.song_file = parser.get('device', 'song_file', None)
-        self.server_user = parser.get('device', 'server_user', None)
-        self.server_pass = parser.get('device', 'server_pass', None)
-        self.server_url = parser.get('device', 'server_url', None)
+        try:
+            self.song_file = parser.get('device', 'song_file')
+            self.server_user = parser.get('device', 'server_user')
+            self.server_pass = parser.get('device', 'server_pass')
+            self.server_url = parser.get('device', 'server_url')
+        except Exception as e:
+            raise ValueError('Definitions missing from config file: %s' % e)
 
         pygame.mixer.init()
         pygame.mixer.music.set_endevent(SONG_END)
