@@ -128,8 +128,8 @@ class NurseryClient(object):
 
         self.change_queue = Queue()
 
-        self.lvl1_sound = pygame.mixer.Sound(self.WHITENOISE_LVL1_FILE)
-        self.lvl2_sound = pygame.mixer.Sound(self.WHITENOISE_LVL2_FILE)
+        self.lvl1_sound = pygame.mixer.Sound(file=self.WHITENOISE_LVL1_FILE)
+        self.lvl2_sound = pygame.mixer.Sound(file=self.WHITENOISE_LVL2_FILE)
 
         log_debug("System Ready")
 
