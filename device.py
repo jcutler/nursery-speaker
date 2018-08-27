@@ -40,7 +40,7 @@ def log_debug(msg):
 
 class ChangeWorker(Thread):
 
-    FIVE_MINUTES = 60 * 60 * 24 * 5
+    ONE_MINUTE = 60
 
     end_processing = False
 
@@ -64,15 +64,18 @@ class ChangeWorker(Thread):
         while not self.end_processing:
             event = self.get_msg()
 
-            if event and event['create_date'] > time.time() - self.FIVE_MINUTES:
-                if STRING_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and event['level'] == 2:
-                    mode = STATE_WHITENOISE_LVL2
+            if event:
+                if event['create_date'] > time.time() - self.ONE_MINUTE:
+                    if STRING_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and event['level'] == 2:
+                        mode = STATE_WHITENOISE_LVL2
+                    else:
+                        mode = STRING_TO_EVENT_MAP[event['mode']]
+
+                    log_debug("Queueing command: %s" % EVENT_TO_STRING_MAP[mode])
+
+                    self.change_queue.put(mode)
                 else:
-                    mode = STRING_TO_EVENT_MAP[event['mode']]
-
-                log_debug("Queueing command: %s" % EVENT_TO_STRING_MAP[mode])
-
-                self.change_queue.put(mode)
+                    log_debug("Skipping old event")
 
             time.sleep(1)
 
@@ -142,7 +145,7 @@ class NurseryClient(object):
     def play_song(self):
         log_debug("Playing song")
         pygame.mixer.music.load(self.song_file)
-        pygame.mixer.music.play(loops=0, start=378) # remove this start change
+        pygame.mixer.music.play(loops=0)
 
     def play_whitenoise(self, level_two=False):
         log_debug("Playing whitenoise. Level 2? %s" % level_two)
