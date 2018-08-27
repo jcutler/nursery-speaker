@@ -107,10 +107,12 @@ class NurseryClient(object):
             self.server_user = parser.get('device', 'server_user')
             self.server_pass = parser.get('device', 'server_pass')
             self.server_url = parser.get('device', 'server_url')
-            self.lvl2_play_secs = parser.getint('device', 'level_two_play_seconds')
+            lvl2_play_secs = parser.getint('device', 'level_two_play_seconds')
 
-            if self.lvl2_play_secs <= 0:
+            if lvl2_play_secs <= 0:
                 raise ValueError('level_two_play_seconds must be an integer larger than 0')
+            else:
+                self.lvl2_play_msecs = lvl2_play_secs * 1000
         except Exception as e:
             raise ValueError('Definitions missing from config file: %s' % e)
 
@@ -156,7 +158,7 @@ class NurseryClient(object):
     def go_whitenoise_lvl2(self):
         log_debug("Go Whitenoise lvl2")
         self.song_end_cb = None
-        pygame.time.set_timer(LVL2_END, self.lvl2_play_secs * 1000)
+        pygame.time.set_timer(LVL2_END, self.lvl2_play_msecs)
         self.state = STATE_WHITENOISE_LVL2
         self.play_whitenoise(level_two=True)
 
