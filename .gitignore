@@ -6,7 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+# OSX
+.DS_Store
+
 # Distribution / packaging
+*.ogg
 .Python
 build/
 develop-eggs/
