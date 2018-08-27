@@ -133,6 +133,12 @@ class NurseryClient(object):
 
         log_debug("System Ready")
 
+    def is_state_change(self, event):
+        return event in (
+            STATE_END, STATE_WHITENOISE, STATE_SONG_THEN_WHITENOISE, STATE_SONG,
+            STATE_SONG_LOOP
+        )
+
     def play_song(self):
         log_debug("Playing song")
         pygame.mixer.music.load(self.song_file)
@@ -236,7 +242,9 @@ class NurseryClient(object):
                 pygame.mixer.music.fadeout(self.CROSSFADE_MSECS)
 
         elif self.state in (STATE_WHITENOISE, STATE_WHITENOISE_LVL2):
-            if self.state == STATE_WHITENOISE_LVL2 and self.state != event:
+            if (self.is_state_change(event) and
+                    self.state == STATE_WHITENOISE_LVL2 and
+                    self.state != event):
                 log_debug("Reset Level 2 Timer")
                 pygame.time.set_timer(LVL2_END, 0)
 
