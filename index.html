@@ -3,17 +3,160 @@
 <head>
   <title>Henry's Nursery</title>
   <style type="text/css">
-    button {
-      display: inline-block;
-      padding: 8px 16px;
-      vertical-align: middle;
-      text-align: center;
-      cursor: pointer;
-      border-radius: 8px;
-    }
+      * {
+          margin: 0;
+          padding: 0;
+      }
+      
+      .container {
+          display: flex;
+          align-items: center;
+      }
+      
+      main {
+          text-align: center;
+          width: 100%;
+          max-width: 414px;
+          height: 732px
+      }
+      
+      table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 16px 0;
+      }
+      
+      table td {
+          padding: 3px
+      }
+      
+      .button {
+          display: inline-block;
+          padding: 0px 16px;
+          vertical-align: middle;
+          text-align: center;
+          cursor: pointer;
+          border-radius: 16px;
+          width: 100%;
+          height: 80px;
+          font-weight: bold;
+          font-size: 50px;
+          line-height: 64px;
+      }
+      
+      .square-button {
+          width: 80px;
+      }
+      
+      .blue-button {
+          color: white;
+          background-color: cornflowerblue;
+          border-color: darkblue;
+      }
+      
+      .inverse-blue-button {
+          color: cornflowerblue;
+          background-color: white;
+          border-color: cornflowerblue;
+      }
+      
+      .yellow-button {
+          color: black;
+          background-color: gold;
+          border-color: darkgoldenrod;
+      }
+      
+      .grey-button {
+          color: black;
+          background-color: lightgray;
+          border-color: gray;
+      }
+      
+      .inverse-grey-button {
+          color: gray;
+          background-color: white;
+          border-color: gray;
+      }
+      
+      .dark-grey-button {
+          color: white;
+          background-color: gray;
+          border-color: gray;
+      }
+      
+      .octagon {
+          width: 81px;
+          height: 81px;
+          background: red;
+          position: relative;
+          border: 0;
+      }
+      
+      .octagon:before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          border-bottom: 22px solid red;
+          border-left: 22px solid white;
+          border-right: 22px solid white;
+          width: 37px;
+          height: 0;
+      }
+
+      .octagon:after {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          border-top: 22px solid red;
+          border-left: 22px solid white;
+          border-right: 22px solid white;
+          width: 37px;
+          height: 0;
+      }
   </style>
 </head>
 <body>
-<button>Hi</button>
+    <main>
+        <table border="0" cols="2">
+            <tr>
+                <td>
+                    <button data-mode="SONG" class="button blue-button">&#x266c;</button>
+                </td>
+                <td class="square-button">
+                    <button data-mode="SONG_LOOP" class="button inverse-blue-button">&#x21ba;</button>
+                </td>
+        </table>
+        <table border="0" cols="1">
+            <tr>
+                <td>
+                    <button class="button yellow-button" data-mode="SONG_THEN_WHITENOISE">&#x266c; &#x2b95; &#x2602;</button>
+                </td>
+            </tr>
+        </table>
+        <table border="0" cols="3">
+            <tr>
+                <td>
+                    <button class="button grey-button" data-mode="WHITENOISE">&#x2602;</button>
+                </td>
+                <td class="square-button">
+                    <button class="button inverse-grey-button" data-mode="WHITENOISE">&#x2b07;</button>
+                </td>
+                <td class="square-button">
+                    <button class="button dark-grey-button" data-mode="WHITENOISE" data-level="2">&#x2b06;</button>
+                </td>
+            </tr>
+        </table>
+        <table border="0" cols="3">
+            <tr>
+                <td></td>
+                <td class="square-button">
+                    <button class="octagon" data-mode="END"></button>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+    </main>
 </body>
 </html>
