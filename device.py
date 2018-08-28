@@ -79,7 +79,7 @@ class ChangeWorker(Thread):
                 else:
                     log_debug("Skipping old event")
 
-            time.sleep(1)
+            time.sleep(2)
 
     def stop(self):
         self.end_processing = True
@@ -130,8 +130,8 @@ class NurseryClient(object):
             raise ValueError('Definitions missing from config file: %s' % e)
 
         pygame.init()
-        os.putenv('SDL_VIDEODRIVER', 'fbcon')
-        pygame.display.init()
+        #os.putenv('SDL_VIDEODRIVER', 'fbcon')
+        #pygame.display.init()
         pygame.mixer.init()
 
         self.lvl1_channel = pygame.mixer.Channel(0)
