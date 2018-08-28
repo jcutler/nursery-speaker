@@ -156,10 +156,12 @@ class NurseryClient(object):
         log_debug("Playing song")
         pygame.mixer.music.load(self.song_file)
         pygame.mixer.music.play(loops=0)
-        pygame.time.set_timer(SONG_FADE_START, self.song_fade_start_msecs)
+        log_debug("Set song fade timer")
+        pygame.time.set_timer(SONG_FADE_START, 10000)
 
     def fadeout_song(self):
         log_debug("Fadeout song")
+        log_debug("Clear song fade timer")
         pygame.time.set_timer(SONG_FADE_START, 0)
         pygame.mixer.music.fadeout(self.CROSSFADE_MSECS)
 
@@ -266,9 +268,6 @@ class NurseryClient(object):
                 self.go_whitenoise()
 
         elif self.state in (STATE_SONG, STATE_SONG_LOOP, STATE_SONG_THEN_WHITENOISE):
-            if self.state == STATE_SONG_THEN_WHITENOISE and self.state != event:
-                pygame.time.set_timer(SONG_FADE_START, 0)
-
             if event == STATE_SONG:
                 self.go_song(start_song=False)
             elif event == STATE_SONG_LOOP:
@@ -311,6 +310,7 @@ class NurseryClient(object):
             elif event == STATE_WHITENOISE_LVL2:
                 self.lvl1_channel.fadeout(self.CROSSFADE_MSECS)
                 self.go_whitenoise_lvl2(start_sound=event != self.state) # only start sound if not already lvl2
+
 
     def start_worker(self):
         self.change_worker = ChangeWorker(self.server_url, self.server_user, self.server_pass, self.change_queue)
