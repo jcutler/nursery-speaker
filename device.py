@@ -7,7 +7,7 @@ import requests
 from threading import Thread
 import time
 
-DEBUG = False
+DEBUG = True
 
 STATE_END = 1
 STATE_SONG = 2
@@ -20,7 +20,7 @@ SONG_END = max(pygame.USEREVENT + 1, STATE_WHITENOISE_LVL2 + 1)
 SONG_FADE_START = SONG_END + 1
 LVL2_END = SONG_FADE_START + 1
 
-STRING_TO_EVENT_MAP = {
+STR_TO_EVENT_MAP = {
     'END': STATE_END,
     'SONG': STATE_SONG,
     'SONG_LOOP': STATE_SONG_LOOP,
@@ -32,8 +32,9 @@ STRING_TO_EVENT_MAP = {
     'LVL2_END': LVL2_END
 }
 
-EVENT_TO_STRING_MAP = { STRING_TO_EVENT_MAP[key]: key for key in STRING_TO_EVENT_MAP }
-
+EVENT_TO_STR_MAP = {STR_TO_EVENT_MAP[key]: key
+                    for key
+                    in STR_TO_EVENT_MAP}
 
 def log_debug(msg):
     if DEBUG:
@@ -68,12 +69,13 @@ class ChangeWorker(Thread):
 
             if event:
                 if event['create_date'] > time.time() - self.ONE_MINUTE:
-                    if STRING_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and event['level'] == 2:
+                    if (STR_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and
+                            event['level'] == 2):
                         mode = STATE_WHITENOISE_LVL2
                     else:
-                        mode = STRING_TO_EVENT_MAP[event['mode']]
+                        mode = STR_TO_EVENT_MAP[event['mode']]
 
-                    log_debug("Queueing command: %s" % EVENT_TO_STRING_MAP[mode])
+                    log_debug("Queueing command: %s" % EVENT_TO_STR_MAP[mode])
 
                     self.change_queue.put(mode)
                 else:
@@ -118,7 +120,8 @@ class NurseryClient(object):
             if self.song_length <= 0:
                 raise ValueError('Song length must be longer than 0 seconds')
 
-            self.song_fade_start_msecs = self.song_length * 1000 - self.CROSSFADE_MSECS
+            self.song_fade_start_msecs = (self.song_length * 1000 -
+                                          self.CROSSFADE_MSECS)
 
             lvl2_play_secs = parser.getint('device', 'level_two_play_seconds')
 
@@ -126,8 +129,11 @@ class NurseryClient(object):
                 raise ValueError('level_two_play_seconds must be an integer larger than 0')
             else:
                 self.lvl2_play_msecs = lvl2_play_secs * 1000
+
         except Exception as e:
-            raise ValueError('Definitions missing from config file: %s' % e)
+            raise ValueError(
+                'Definitions missing/incorrect in config file: %s' % e
+            )
 
         pygame.init()
         #os.putenv('SDL_VIDEODRIVER', 'fbcon')
@@ -176,11 +182,13 @@ class NurseryClient(object):
         if level_two:
             self.lvl2_channel.stop()
             self.lvl2_channel.set_volume(1)
-            self.lvl2_channel.play(self.lvl2_sound, loops=-1, fade_ms=self.CROSSFADE_MSECS)
+            self.lvl2_channel.play(self.lvl2_sound, loops=-1,
+                                   fade_ms=self.CROSSFADE_MSECS)
         else:
             self.lvl1_channel.stop()
             self.lvl1_channel.set_volume(1)
-            self.lvl1_channel.play(self.lvl1_sound, loops=-1, fade_ms=self.CROSSFADE_MSECS)
+            self.lvl1_channel.play(self.lvl1_sound, loops=-1,
+                                   fade_ms=self.CROSSFADE_MSECS)
 
     def go_whitenoise(self):
         log_debug("Go Whitenoise")
@@ -244,7 +252,8 @@ class NurseryClient(object):
             return None
 
     def handle_event(self, event):
-        log_debug("Handling event: %s -> %s" % (EVENT_TO_STRING_MAP[self.state], EVENT_TO_STRING_MAP[event]))
+        log_debug("Handling event: %s -> %s" % (EVENT_TO_STR_MAP[self.state],
+                                                EVENT_TO_STR_MAP[event]))
 
         if event == SONG_END and self.song_end_cb:
             self.song_end_cb()
@@ -267,7 +276,8 @@ class NurseryClient(object):
             elif event == STATE_WHITENOISE:
                 self.go_whitenoise()
 
-        elif self.state in (STATE_SONG, STATE_SONG_LOOP, STATE_SONG_THEN_WHITENOISE):
+        elif self.state in (STATE_SONG, STATE_SONG_LOOP,
+                            STATE_SONG_THEN_WHITENOISE):
             if event == STATE_SONG:
                 self.go_song(start_song=False)
             elif event == STATE_SONG_LOOP:
@@ -288,7 +298,8 @@ class NurseryClient(object):
                 log_debug("Clear Level 2 Timer")
                 pygame.time.set_timer(LVL2_END, 0)
 
-            if event in (STATE_SONG, STATE_SONG_LOOP, STATE_SONG_THEN_WHITENOISE, STATE_END):
+            if event in (STATE_SONG, STATE_SONG_LOOP,
+                         STATE_SONG_THEN_WHITENOISE, STATE_END):
                 if self.state == STATE_WHITENOISE:
                     self.lvl1_channel.fadeout(self.CROSSFADE_MSECS)
                 else:
@@ -309,11 +320,13 @@ class NurseryClient(object):
 
             elif event == STATE_WHITENOISE_LVL2:
                 self.lvl1_channel.fadeout(self.CROSSFADE_MSECS)
-                self.go_whitenoise_lvl2(start_sound=event != self.state) # only start sound if not already lvl2
+                # only start sound if not already lvl2
+                self.go_whitenoise_lvl2(start_sound=event != self.state)
 
 
     def start_worker(self):
-        self.change_worker = ChangeWorker(self.server_url, self.server_user, self.server_pass, self.change_queue)
+        self.change_worker = ChangeWorker(self.server_url, self.server_user,
+                                          self.server_pass, self.change_queue)
         self.change_worker.start()
 
     def run(self):
