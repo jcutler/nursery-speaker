@@ -177,6 +177,13 @@ class NurseryClient(object):
         if self.song_fade_start_cb:
             self.song_fade_start_cb()
 
+    def handle_song_end(self):
+        if self.song_end_cb:
+            if not pygame.mixer.music.get_busy():
+                self.song_end_cb()
+            else:
+                log_debug("Skip handling song end because it is playing again")
+
     def play_whitenoise(self, level_two=False):
         log_debug("Playing whitenoise. Level 2? %s" % level_two)
         if level_two:
@@ -255,8 +262,8 @@ class NurseryClient(object):
         log_debug("Handling event: %s -> %s" % (EVENT_TO_STR_MAP[self.state],
                                                 EVENT_TO_STR_MAP[event]))
 
-        if event == SONG_END and self.song_end_cb:
-            self.song_end_cb()
+        if event == SONG_END:
+            self.handle_song_end()
             return
 
         if self.state == STATE_WHITENOISE_LVL2 and event == LVL2_END:
