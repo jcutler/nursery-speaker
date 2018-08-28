@@ -60,7 +60,10 @@ function doCommand(btn, data) {
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
             setEnabled(true);
-            if (xhr.status !== 201) {
+            if (xhr.status === 401) {
+                window.location.reload();
+            }
+            else if (xhr.status !== 201) {
                 window.alert("Error Encountered");
                 console.log(xhr.status);
                 console.log(xhr.responseText);
