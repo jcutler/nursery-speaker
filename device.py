@@ -157,7 +157,7 @@ class NurseryClient(object):
         pygame.mixer.music.load(self.song_file)
         pygame.mixer.music.play(loops=0)
         log_debug("Set song fade timer")
-        pygame.time.set_timer(SONG_FADE_START, 10000)
+        pygame.time.set_timer(SONG_FADE_START, self.song_fade_start_msecs)
 
     def fadeout_song(self):
         log_debug("Fadeout song")
