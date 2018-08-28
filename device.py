@@ -164,12 +164,14 @@ class NurseryClient(object):
         self.state = STATE_WHITENOISE
         self.play_whitenoise()
 
-    def go_whitenoise_lvl2(self):
+    def go_whitenoise_lvl2(self, start_sound=True):
         log_debug("Go Whitenoise lvl2")
         self.song_end_cb = None
         pygame.time.set_timer(LVL2_END, self.lvl2_play_msecs)
         self.state = STATE_WHITENOISE_LVL2
-        self.play_whitenoise(level_two=True)
+
+        if start_sound:
+            self.play_whitenoise(level_two=True)
 
     def go_song_loop(self, start_song=False):
         log_debug("Go Song Loop. Start? %s" % start_song)
@@ -270,9 +272,9 @@ class NurseryClient(object):
                 self.lvl2_channel.fadeout(self.CROSSFADE_MSECS)
                 self.go_whitenoise()
 
-            elif event == STATE_WHITENOISE_LVL2 and self.state != event:
+            elif event == STATE_WHITENOISE_LVL2:
                 self.lvl1_channel.fadeout(self.CROSSFADE_MSECS)
-                self.go_whitenoise_lvl2()
+                self.go_whitenoise_lvl2(start_sound=event != self.state) # only start sound if not already lvl2
 
     def start_worker(self):
         self.change_worker = ChangeWorker(self.server_url, self.server_user, self.server_pass, self.change_queue)
