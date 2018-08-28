@@ -248,7 +248,7 @@ class NurseryClient(object):
             if (self.is_state_change(event) and
                     self.state == STATE_WHITENOISE_LVL2 and
                     self.state != event):
-                log_debug("Reset Level 2 Timer")
+                log_debug("Clear Level 2 Timer")
                 pygame.time.set_timer(LVL2_END, 0)
 
             if event in (STATE_SONG, STATE_SONG_LOOP, STATE_SONG_THEN_WHITENOISE, STATE_END):
