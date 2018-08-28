@@ -7,7 +7,7 @@ import requests
 from threading import Thread
 import time
 
-DEBUG = True
+DEBUG = False
 
 STATE_END = 1
 STATE_SONG = 2
