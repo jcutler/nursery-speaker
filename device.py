@@ -205,7 +205,10 @@ class NurseryClient(object):
                 log_debug("Skip handling song end because it is playing again")
 
     def start_lvl2_timer(self):
-        log_debug("Start lvl2 timer")
+        if self.lvl2_timer_running:
+            log_debug("Reset lvl2 timer")
+        else:
+            log_debug("Start lvl2 timer")
         self.lvl2_timer_running = True
         pygame.time.set_timer(LVL2_END, self.lvl2_play_msecs)
 
