@@ -1,6 +1,5 @@
 from configparser import ConfigParser
 from multiprocessing import Queue
-import os
 import pygame
 import queue
 import requests
@@ -351,15 +350,17 @@ class NurseryClient(object):
                 self.fadeout_song()
 
         elif self.state in (STATE_WHITENOISE, STATE_WHITENOISE_LVL2):
+
+            # do this first so that the check later will stop the lvl2 timer
+            if self.state == STATE_WHITENOISE_LVL2 and event == LVL2_END:
+                event = STATE_WHITENOISE
+
             prev_level = self.whitenoise_level_from_state(self.state)
 
             if (self.is_event_state_change(event) and
                     self.state == STATE_WHITENOISE_LVL2 and
                     self.state != event):
                 self.stop_lvl2_timer()
-
-            if self.state == STATE_WHITENOISE_LVL2 and event == LVL2_END:
-                event = STATE_WHITENOISE
 
             if event in (STATE_SONG, STATE_SONG_LOOP,
                          STATE_SONG_THEN_WHITENOISE, STATE_END):
