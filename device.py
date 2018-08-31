@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 from multiprocessing import Queue
+import os
 import pygame
 import queue
 import requests
@@ -93,10 +94,12 @@ class ChangeWorker(Thread):
 
 class NurseryClient(object):
 
-    CONFIG_FILENAME = 'nursery.ini'
+    SCRIPT_HOME = os.path.dirname(os.path.realpath(__file__))
 
-    WHITENOISE_LVL1_FILE = 'Rain.ogg'
-    WHITENOISE_LVL2_FILE = 'Strong_Hair_Dryer.ogg'
+    CONFIG_FILENAME = SCRIPT_HOME + '/nursery.ini'
+
+    WHITENOISE_LVL1_FILE = SCRIPT_HOME + '/Rain.ogg'
+    WHITENOISE_LVL2_FILE = SCRIPT_HOME + '/Strong_Hair_Dryer.ogg'
 
     CROSSFADE_MSECS = 10000
 
@@ -123,6 +126,8 @@ class NurseryClient(object):
             self.server_pass = parser.get('device', 'server_pass')
             self.server_url = parser.get('device', 'server_url')
             self.song_length = parser.getint('device', 'song_length_seconds')
+
+            self.song_file = self.SCRIPT_HOME + '/' + self.song_file
 
             if self.song_length <= 0:
                 raise ValueError('Song length must be longer than 0 seconds')
