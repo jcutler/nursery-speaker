@@ -349,7 +349,11 @@ class NurseryClient(object):
             elif event == STATE_SONG_LOOP:
                 self.go_song_loop(start_song=False)
             elif event == STATE_SONG_THEN_WHITENOISE:
-                self.go_song_then_whitenoise(start_song=False)
+                if self.fade_start_timer_running:
+                    self.go_song_then_whitenoise(start_song=False)
+                else:
+                    self.go_whitenoise(level=1, start_sound=True)
+                    self.fadeout_song()
             elif event == STATE_WHITENOISE:
                 self.go_whitenoise(level=1, start_sound=True)
                 self.fadeout_song()
