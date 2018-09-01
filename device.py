@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 from multiprocessing import Queue
 import os
+from pathlib import Path
 import pygame
 import queue
 import requests
@@ -40,6 +41,9 @@ STR_TO_EVENT_MAP = {
 EVENT_TO_STR_MAP = {STR_TO_EVENT_MAP[key]: key
                     for key
                     in STR_TO_EVENT_MAP}
+
+STOP_FILE='/tmp/nursery_speaker_stop_file'
+RESTART_FILE='/tmp/nursery_speaker_restart_file'
 
 def log_debug(msg):
     if DEBUG:
@@ -396,26 +400,43 @@ class NurseryClient(object):
                     self.fadeout_channel(level=prev_level)
                 self.go_whitenoise(level=new_level, start_sound=(event != self.state))
 
+    def check_for_stop_or_restart(self):
+        restart_file = Path(RESTART_FILE)
+        if restart_file.is_file():
+            restart_file.unlink()
+            return True
+
+        stop_file = Path(STOP_FILE)
+        if stop_file.is_file():
+            return True
+
+        return False
 
     def start_worker(self):
         self.change_worker = ChangeWorker(self.server_url, self.server_user,
                                           self.server_pass, self.change_queue)
+        self.change_worker.daemon = True
         self.change_worker.start()
 
     def run(self):
         self.start_worker()
 
+        run = True
+
         log_debug("Starting event loop")
 
-        while True:
+        while run:
             if DEBUG:
                 print('.', end='', flush=True)
+
             event = self.get_event()
 
             if event:
                 self.handle_event(event)
-            else:
-                time.sleep(0.05)
+
+            run = not self.check_for_stop_or_restart()
+
+            time.sleep(1)
 
     @staticmethod
     def startup():
