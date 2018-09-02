@@ -356,6 +356,7 @@ class NurseryClient(object):
                 if self.fade_start_timer_running:
                     self.go_song_then_whitenoise(start_song=False)
                 else:
+                    log_debug("Fade timer already done, going to whitenoise")
                     self.go_whitenoise(level=1, start_sound=True)
                     self.fadeout_song()
             elif event == STATE_WHITENOISE:
