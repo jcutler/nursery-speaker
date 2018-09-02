@@ -403,11 +403,13 @@ class NurseryClient(object):
     def check_for_stop_or_restart(self):
         restart_file = Path(RESTART_FILE)
         if restart_file.is_file():
+            log_debug("Found restart file. Exiting for restart.")
             restart_file.unlink()
             return True
 
         stop_file = Path(STOP_FILE)
         if stop_file.is_file():
+            log_debug("Found stop file. Exiting.")
             return True
 
         return False
