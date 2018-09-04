@@ -6,13 +6,13 @@ RUNCOMMAND="${DIR}/env/bin/python ${DIR}/device.py"
 
 STOPFILE="/tmp/nursery_speaker_stop_file"
 
-
 if [[ -z $(pidof $RUNCOMMAND) ]]; then
+    echo "Process not found."
     if [[ -e $STOPFILE ]]; then
-        echo "Process not found. Stopfile present. Exiting."
-	exit
+        echo "Stopfile present, exiting."
+	    exit
     else
-        echo "Process not found. Running command."
+        echo "Running command."
         $RUNCOMMAND &
     fi
 else
