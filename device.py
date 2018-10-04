@@ -164,7 +164,7 @@ class NurseryClient(object):
             2: {
                 'channel': pygame.mixer.Channel(1),
                 'sound': pygame.mixer.Sound(file=self.WHITENOISE_LVL2_FILE),
-                'volume': 0.2
+                'volume': 0.3
             }
         }
 
