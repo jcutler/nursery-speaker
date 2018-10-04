@@ -104,6 +104,7 @@ class NurseryClient(object):
 
     WHITENOISE_LVL1_FILE = SCRIPT_HOME + '/Rain.ogg'
     WHITENOISE_LVL2_FILE = SCRIPT_HOME + '/Strong_Hair_Dryer.ogg'
+    TONE_FILE = SCRIPT_HOME + '/Tone.ogg'
 
     CROSSFADE_MSECS = 10000
 
@@ -174,6 +175,9 @@ class NurseryClient(object):
 
         self.change_queue = Queue()
 
+        tone = pygame.mixer.Sound(file=self.TONE_FILE)
+        tone.set_volume(0.2)
+        tone.play()
 
         log_debug("System Ready")
 
