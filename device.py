@@ -157,13 +157,18 @@ class NurseryClient(object):
         self.whitenoises = {
             1: {
                 'channel': pygame.mixer.Channel(0),
-                'sound': pygame.mixer.Sound(file=self.WHITENOISE_LVL1_FILE)
+                'sound': pygame.mixer.Sound(file=self.WHITENOISE_LVL1_FILE),
+                'volume': 1.0
             },
             2: {
                 'channel': pygame.mixer.Channel(1),
-                'sound': pygame.mixer.Sound(file=self.WHITENOISE_LVL2_FILE)
+                'sound': pygame.mixer.Sound(file=self.WHITENOISE_LVL2_FILE),
+                'volume': 0.2
             }
         }
+
+        for level in self.whitenoises:
+            self.whitenoises[level]['sound'].set_volume(self.whitenoises[level]['volume'])
 
         pygame.mixer.music.set_endevent(SONG_END)
 
@@ -229,6 +234,7 @@ class NurseryClient(object):
 
     def play_song(self):
         log_debug("Playing song")
+        pygame.mixer.music.set_volume(0.8)
         pygame.mixer.music.load(self.song_file)
         pygame.mixer.music.play(loops=0)
         self.start_fade_start_timer()
