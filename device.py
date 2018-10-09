@@ -66,7 +66,7 @@ class ChangeWorker(Thread):
         self.change_queue = change_queue
 
     def get_msg(self):
-        response = requests.get(self.url, auth=(self.username, self.password))
+        response = requests.get(self.url, auth=(self.username, self.password), timeout=5)
         if response.status_code == 200:
             return response.json()
         else:
@@ -78,23 +78,30 @@ class ChangeWorker(Thread):
         while not self.end_processing:
             log_debug("Checking for message")
 
-            event = self.get_msg()
+            try:
+                event = self.get_msg()
 
-            if event:
-                log_debug("Found message")
+                if event:
+                    log_debug("Found message")
 
-                if event['create_date'] > time.time() - self.ONE_MINUTE:
-                    if (STR_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and
-                            event['level'] == 2):
-                        mode = STATE_WHITENOISE_LVL2
+                    if event['create_date'] > time.time() - self.ONE_MINUTE:
+                        if (STR_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and
+                                event['level'] == 2):
+                            mode = STATE_WHITENOISE_LVL2
+                        else:
+                            mode = STR_TO_EVENT_MAP[event['mode']]
+
+                        log_debug("Queueing command: %s" % EVENT_TO_STR_MAP[mode])
+
+                        self.change_queue.put(mode)
                     else:
-                        mode = STR_TO_EVENT_MAP[event['mode']]
+                        log_debug("Skipping old event")
 
-                    log_debug("Queueing command: %s" % EVENT_TO_STR_MAP[mode])
+            except requests.exceptions.Timeout:
+                log_debug("Request timed out, trying again.")
 
-                    self.change_queue.put(mode)
-                else:
-                    log_debug("Skipping old event")
+            except requests.exceptions.RequestException as e:
+                log_debug("Encountered exception: {}".format(e))
 
             time.sleep(5)
 
