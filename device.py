@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from datetime import datetime
 from multiprocessing import Queue
 import os
 from pathlib import Path
@@ -47,7 +48,7 @@ RESTART_FILE='/tmp/nursery_speaker_restart_file'
 
 def log_debug(msg):
     if DEBUG:
-        print(msg)
+        print("[{}] {}".format(datetime.now(), msg))
 
 
 class ChangeWorker(Thread):
@@ -73,10 +74,15 @@ class ChangeWorker(Thread):
 
     def run(self):
         log_debug("Starting ChangeWorker")
+
         while not self.end_processing:
+            log_debug("Checking for message")
+
             event = self.get_msg()
 
             if event:
+                log_debug("Found message")
+
                 if event['create_date'] > time.time() - self.ONE_MINUTE:
                     if (STR_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and
                             event['level'] == 2):
