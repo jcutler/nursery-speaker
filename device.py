@@ -90,7 +90,7 @@ class ChangeWorker(Thread):
                 else:
                     log_debug("Skipping old event")
 
-            time.sleep(2)
+            time.sleep(5)
 
     def stop(self):
         self.end_processing = True
