@@ -439,6 +439,10 @@ class NurseryClient(object):
         log_debug("Starting event loop")
 
         while run:
+            if not self.change_worker.is_alive():
+                log_debug("Change worker died, restarting it.")
+                self.start_worker()
+
             if DEBUG:
                 print('.', end='', flush=True)
 
