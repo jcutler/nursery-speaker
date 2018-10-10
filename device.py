@@ -251,7 +251,7 @@ class NurseryClient(object):
 
     def play_song(self):
         log_debug("Playing song")
-        pygame.mixer.music.set_volume(0.7)
+        pygame.mixer.music.set_volume(0.6)
         pygame.mixer.music.load(self.song_file)
         pygame.mixer.music.play(loops=0)
         self.start_fade_start_timer()
