@@ -13,7 +13,7 @@ class NurseryServer(object):
     CONFIG_FILENAME = 'nursery.ini'
 
     VALID_MODES = [
-        'END', 'SONG', 'SONG_LOOP', 'SONG_THEN_WHITENOISE', 'WHITENOISE'
+        'END', 'SONG', 'SONG_LOOP', 'SONG_THEN_WHITENOISE', 'WHITENOISE', 'RESTART'
     ]
 
     def load_config(self):

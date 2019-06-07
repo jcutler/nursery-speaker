@@ -17,13 +17,14 @@ STATE_SONG_LOOP = 3
 STATE_SONG_THEN_WHITENOISE = 4
 STATE_WHITENOISE = 5
 STATE_WHITENOISE_LVL2 = 6
+STATE_RESTART = 7
 
 SONG_END = max(pygame.USEREVENT + 1, STATE_WHITENOISE_LVL2 + 1)
 SONG_FADE_START = SONG_END + 1
 LVL2_END = SONG_FADE_START + 1
 
 COMMANDS = [STATE_END, STATE_SONG, STATE_SONG_LOOP, STATE_SONG_THEN_WHITENOISE,
-            STATE_WHITENOISE, STATE_WHITENOISE_LVL2]
+            STATE_WHITENOISE, STATE_WHITENOISE_LVL2, STATE_RESTART]
 
 TRIGGERS = [SONG_END, SONG_FADE_START, LVL2_END]
 
@@ -36,7 +37,8 @@ STR_TO_EVENT_MAP = {
     'WHITENOISE_LVL2': STATE_WHITENOISE_LVL2,
     'SONG_END': SONG_END,
     'SONG_FADE_START': SONG_FADE_START,
-    'LVL2_END': LVL2_END
+    'LVL2_END': LVL2_END,
+    'RESTART': STATE_RESTART
 }
 
 EVENT_TO_STR_MAP = {STR_TO_EVENT_MAP[key]: key
@@ -462,7 +464,10 @@ class NurseryClient(object):
             event = self.get_event()
 
             if event:
-                self.handle_event(event)
+                if event == STATE_RESTART:
+                    return
+                else:
+                    self.handle_event(event)
 
             run = not self.check_for_stop_or_restart()
 
