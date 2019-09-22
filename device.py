@@ -55,7 +55,7 @@ def log_debug(msg):
 
 class ChangeWorker(Thread):
 
-    ONE_MINUTE = 60
+    FIVE_MINUTES = 60 * 5
 
     end_processing = False
 
@@ -86,7 +86,8 @@ class ChangeWorker(Thread):
                 if event:
                     log_debug("Found message")
 
-                    if event['create_date'] > time.time() - self.ONE_MINUTE:
+                    curtime = time.time()
+                    if event['create_date'] > time.time() - self.FIVE_MINUTES:
                         if (STR_TO_EVENT_MAP[event['mode']] == STATE_WHITENOISE and
                                 event['level'] == 2):
                             mode = STATE_WHITENOISE_LVL2
@@ -97,7 +98,7 @@ class ChangeWorker(Thread):
 
                         self.change_queue.put(mode)
                     else:
-                        log_debug("Skipping old event")
+                        log_debug("Skipping old event. Event date: {}, current time: {}".format(event['create_date'], curtime))
 
             except requests.exceptions.Timeout:
                 log_debug("Request timed out, trying again.")
@@ -167,6 +168,7 @@ class NurseryClient(object):
                 'Definitions missing/incorrect in config file: %s' % e
             )
 
+        os.environ["SDL_VIDEODRIVER"] = "dummy"
         pygame.init()
         pygame.mixer.init()
 
