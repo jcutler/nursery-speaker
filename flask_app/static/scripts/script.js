@@ -9,7 +9,7 @@ function preloader() {
     var body = document.getElementsByTagName('body')[0];
     
     Object.keys(nodes).forEach(function(key) {
-        nodes[key].style.background = "url(src/spinner-" + key + ") no-repeat -9999px -9999px;";
+        nodes[key].style.background = "url(" + window.static_root + "/spinner-" + key + ") no-repeat -9999px -9999px;";
         nodes[key].style.position = "absolute";
         nodes[key].style.top = "-1px";
         body.appendChild(nodes[key]);
@@ -53,7 +53,7 @@ function doCommand(btn, data) {
     }).join('&');
 
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'server.py', true);
+    xhr.open('POST', 'server', true);
 
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     

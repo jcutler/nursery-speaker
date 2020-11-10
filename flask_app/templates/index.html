@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <title>Henry's Nursery</title>
-  <link rel="stylesheet" type="text/css" href="src/style.css" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/style.css') }}" />
 </head>
 <body>
     <main>
@@ -10,13 +10,13 @@
             <tr>
                 <td>
                     <button data-mode="SONG" class="button blue-button">
-                        <div class="spinner"><img src="src/spinner-white.png" /></div>
+                        <div class="spinner"><img src="{{ url_for('static', filename='images/spinner-white.png') }}" /></div>
                         <span class="button-text">&#x266c;</span>
                     </button>
                 </td>
                 <td class="square-button">
                     <button data-mode="SONG_LOOP" class="button inverse-blue-button">
-                        <div class="spinner"><img src="src/spinner-blue.png" /></div>
+                        <div class="spinner"><img src="{{ url_for('static', filename='images/spinner-blue.png') }}" /></div>
                         <span class="button-text">&#x21ba;</span>
                     </button>
                 </td>
@@ -25,7 +25,7 @@
             <tr>
                 <td>
                     <button class="button yellow-button" data-mode="SONG_THEN_WHITENOISE">
-                        <div class="spinner"><img src="src/spinner-black.png" /></div>
+                        <div class="spinner"><img src="{{ url_for('static', filename='images/spinner-black.png') }}" /></div>
                         <span class="button-text">&#x266c; &#x25b6; &#x2602;</span>
                     </button>
                 </td>
@@ -35,19 +35,19 @@
             <tr>
                 <td>
                     <button class="button green-button" data-mode="WHITENOISE">
-                        <div class="spinner"><img src="src/spinner-white.png" /></div>
+                        <div class="spinner"><img src="{{ url_for('static', filename='images/spinner-white.png') }}" /></div>
                         <span class="button-text">&#x2602;</span>
                     </button>
                 </td>
                 <td class="square-button">
                     <button class="button inverse-green-button" data-mode="WHITENOISE">
-                        <div class="spinner"><img src="src/spinner-green.png" /></div>
+                        <div class="spinner"><img src="{{ url_for('static', filename='images/spinner-green.png') }}" /></div>
                         <span class="button-text">&#x2b07;</span>
                     </button>
                 </td>
                 <td class="square-button">
                     <button class="button dark-green-button" data-mode="WHITENOISE" data-level="2">
-                        <div class="spinner"><img src="src/spinner-white.png" /></div>
+                        <div class="spinner"><img src="{{ url_for('static', filename='images/spinner-white.png') }}" /></div>
                         <span class="button-text">&#x2b06;</span>
                     </button>
                 </td>
@@ -58,7 +58,7 @@
                 <td></td>
                 <td class="square-button">
                     <button data-mode="END" class="stop">
-                        <div class="spinner"><img src="src/spinner-white.png" /></div>
+                        <div class="spinner"><img src="{{ url_for('static', filename='images/spinner-white.png') }}" /></div>
                         <span class="button-text">&#x1f6d1;</span>
                     </button>
                 </td>
@@ -66,6 +66,9 @@
             </tr>
         </table>
     </main>
-    <script type="text/javascript" src="src/script.js"></script>
+    <script>
+	var static_root = "{{ url_for('static', filename='images') }}";
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/script.js') }}"></script>
 </body>
 </html>
